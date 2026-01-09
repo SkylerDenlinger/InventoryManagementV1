@@ -1,0 +1,73 @@
+# =========================
+# Build results
+# =========================
+bin/
+obj/
+**/bin/
+**/obj/
+
+# =========================
+# User-specific files
+# =========================
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Visual Studio / VS Code
+# =========================
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# =========================
+# Rider / JetBrains
+# =========================
+.idea/
+*.sln.iml
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# OS generated files
+# =========================
+[Dd]esktop.ini
+Thumbs.db
+
+# =========================
+# NuGet
+# =========================
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# =========================
+# ASP.NET Core
+# =========================
+appsettings.Development.json
+appsettings.Local.json
+
+# =========================
+# EF Core
+# =========================
+**/Migrations/*.Designer.cs
+**/Migrations/*.resx
+
+# =========================
+# Test results
+# =========================
+TestResults/
+
+# =========================
+# Coverage
+# =========================
+coverage/
+coverage.*

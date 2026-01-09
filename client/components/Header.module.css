@@ -1,0 +1,27 @@
+.header {
+  display: flex;
+  align-items: center;
+
+  height: 64px;
+  padding: 0 24px;
+
+  background-color: #1E40AF;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: white;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: White;
+}

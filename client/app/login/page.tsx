@@ -2,7 +2,7 @@ import styles from './page.module.css';
 import Link from 'next/link';
 import Header from '@/components/Header';
 
-export default function AuthPage() {
+export default function LoginPage() {
     return (
         <div>
             <Header />
@@ -11,7 +11,7 @@ export default function AuthPage() {
             {/* Add your authentication form or components here */}
 
             <div className = {styles.authform}>
-                <input type="text" placeholder="Username" />
+                <input type="text" placeholder="Email" />
                 <input type="password" placeholder="Password" />
                 <button type="submit">Sign In</button>
 

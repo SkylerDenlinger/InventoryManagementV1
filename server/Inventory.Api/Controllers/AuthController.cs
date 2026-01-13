@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,55 +13,82 @@ namespace Inventory.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _config;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly SignInManager<AppUser> _signInManager;
 
-    public AuthController(IConfiguration config)
+    public AuthController(
+        IConfiguration config,
+        UserManager<AppUser> userManager,
+        SignInManager<AppUser> signInManager)
     {
         _config = config;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     public record LoginRequest(string Email, string Password);
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        // 1) TEMPORARY DEV CHECK (replace with DB + password hashing next step)
-        // Pick any credentials you want for now.
-        var isValidUser =
-            request.Email == "admin@test.com" &&
-            request.Password == "Password123!";
-
-        if (!isValidUser)
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null)
             return Unauthorized(new { message = "Invalid credentials" });
 
-        // 2) Read Jwt config (must match your validation settings)
+        var result = await _signInManager.CheckPasswordSignInAsync(
+            user,
+            request.Password,
+            lockoutOnFailure: true
+        );
+
+        if (!result.Succeeded)
+            return Unauthorized(new { message = "Invalid credentials" });
+
+        // JWT config
         var jwtSection = _config.GetSection("Jwt");
         var issuer = jwtSection["Issuer"];
         var audience = jwtSection["Audience"];
         var key = jwtSection["Key"];
 
-        // 3) Build claims for this user
+        // Roles from Identity
+        var roles = await _userManager.GetRolesAsync(user);
+
+        // Claims
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, "123"),     // user id
-            new Claim(ClaimTypes.Role, "Admin"),               // role
-            new Claim("locationId", "12")                      // example custom claim
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        // 4) Sign token (HS256)
+        // Put roles into the token so [Authorize(Roles="Admin")] works
+        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+        // Sign token
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!));
         var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
-        // 5) Create token
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(30),
+            expires: DateTime.UtcNow.AddMinutes(60),
             signingCredentials: creds
         );
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
         return Ok(new { accessToken = tokenString });
+    }
+
+    // Quick test endpoint: proves the token + role claims are being accepted
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue(JwtRegisteredClaimNames.Email);
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray();
+
+        return Ok(new { email, roles });
     }
 }

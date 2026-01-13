@@ -12,6 +12,20 @@
   justify-content: center;   /* horizontal center */
 }
 
+.background {
+  background-color: grey;
+  border: 2px solid black;
+  padding: clamp(16px, 3vw, 32px);
+}
+
+.link {
+  display: block;       /* ⬅️ key */
+  width: 100%;
+  height: 100%;
+
+  text-decoration: none;
+}
+
 .actionsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -23,6 +37,9 @@
 }
 
 .actionButton {
+  height: 100%;
+  width: 100%;
+
   background-color: #1E40AF;/* cobalt blue */
   color: white;
   border: none;

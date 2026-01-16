@@ -1,0 +1,176 @@
+/* page.module.css */
+
+.pageDiv {
+  
+}
+
+.mainPageDiv {
+display: grid;
+  grid-template-columns: 1fr 1fr; /* left 50% / right 50% */
+  width: 100%;
+}
+
+/* LEFT PANEL (Create User) */
+.leftPanel {
+  padding: 32px;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.pageTitle {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.pageSubtitle {
+  margin: 0 0 16px 0;
+  color: #4b5563;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 16px 0;
+}
+
+.sectionTitle {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.createUserForm {
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.formLabel {
+  display: grid;
+  gap: 6px;
+}
+
+.labelText {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.textInput,
+.selectInput {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  background: white;
+}
+
+.textInput:focus,
+.selectInput:focus {
+  border-color: #2563eb;
+}
+
+.submitButton {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.successMessage {
+  margin: 0;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.errorMessage {
+  margin: 0;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* RIGHT PANEL (Users Table) */
+.rightPanel {
+  padding: 32px;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.tableWrap {
+  margin-top: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.usersTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.usersTable thead th {
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: #f9fafb;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.usersTable tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.usersTable tbody tr:hover {
+  background: #f9fafb;
+}
+
+.thButton {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.sortIcon {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.rolePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rolePill {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #1e3a8a;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.mutedCell {
+  color: #9ca3af;
+  font-style: italic;
+}

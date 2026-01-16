@@ -20,6 +20,20 @@ public class AdminUsersController : ControllerBase
         _roleManager = roleManager;
     }
 
+    [HttpGet]
+    public IActionResult GetUsers()
+    {
+        var users = _userManager.Users
+            .Select(u => new
+            {
+                u.Id,
+                u.Email
+            })
+            .ToList();
+
+        return Ok(users);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {

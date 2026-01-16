@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Header from "@/components/Header";
+import styles from "./page.module.css";
+
+type User = {
+    id: string;
+    email: string;
+};
 
 export default function LoginPage() {
     const router = useRouter();
@@ -10,6 +18,22 @@ export default function LoginPage() {
     const [password, setPassword] = useState("Password123!");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [users, setUsers] = useState<User[]>([]);
+
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) return;
+
+        fetch("http://localhost:5230/api/admin/users", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => res.ok ? res.json() : Promise.reject())
+            .then(setUsers)
+            .catch(() => { });
+    }, []);
+
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -56,39 +80,43 @@ export default function LoginPage() {
 
     // ✅ Component return MUST be here (not inside handleSubmit)
     return (
-        <div style={{ padding: 24, maxWidth: 420 }}>
-            <h1>Login</h1>
+        <div className={styles.pageDiv}>
+            <Header />
 
-            <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
-                <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    type="email"
-                    placeholder="Email"
-                    required
-                />
+            <div style={{ padding: 24, maxWidth: 420 }}>
+                <h1>Login</h1>
 
-                <input
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    type="password"
-                    placeholder="Password"
-                    required
-                />
+                <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
+                    <input
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        type="email"
+                        placeholder="Email"
+                        required
+                    />
 
-                <button disabled={isLoading} type="submit">
-                    {isLoading ? "Logging in..." : "Login"}
-                </button>
+                    <input
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        type="password"
+                        placeholder="Password"
+                        required
+                    />
 
-                {error && <p style={{ color: "red" }}>{error}</p>}
-            </form>
+                    <button disabled={isLoading} type="submit">
+                        {isLoading ? "Logging in..." : "Login"}
+                    </button>
 
-            <p>Passwords:</p>
-            <ul>
-                <li>storemanager1@local.com / Password123!</li>
-                <li>districtmanager1@local.com / Password123!</li>
-                <li>admin@local.com / Admin123!</li>
-            </ul>
+                    {error && <p style={{ color: "red" }}>{error}</p>}
+                </form>
+
+                <p>Logins:</p>
+                <ul>
+                    <li>storemanager1@local.com / Password123!</li>
+                    <li>districtmanager1@local.com / Password123!</li>
+                    <li>admin@local.com / Admin123!</li>
+                </ul>
+            </div>
         </div>
     );
 }

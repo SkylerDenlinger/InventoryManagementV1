@@ -72,9 +72,9 @@ if (app.Environment.IsDevelopment())
     await SeedAdminUserAsync(app.Services);
 }
 
+app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("frontend");
 app.MapControllers();
 
 app.Run();

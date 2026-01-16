@@ -9,9 +9,13 @@ import styles from "./page.module.css";
 type User = {
     id: string;
     email: string;
+    roles: string[];
+    districtId: number | null;
+    locationId: number | null;
 };
 
 export default function LoginPage() {
+
     const router = useRouter();
 
     const [email, setEmail] = useState("storemanager1@local.com");
@@ -66,10 +70,12 @@ export default function LoginPage() {
 
             const me = await meRes.json();
             const roles: string[] = me.roles;
+            const districtId = me.districtId;
+            const locationId = me.locationId;
 
             if (roles.includes("Admin")) router.push("/admin");
-            else if (roles.includes("DistrictManager")) router.push("/district");
-            else if (roles.includes("StoreManager")) router.push("/store");
+            else if (roles.includes("DistrictManager")) router.push(`/districts/district/${districtId}`);
+            else if (roles.includes("StoreManager")) router.push(`/districts/district/${districtId}/location/${locationId}`);
             else router.push("/unauthorized");
         } catch {
             setError("Could not reach API (is it running?)");

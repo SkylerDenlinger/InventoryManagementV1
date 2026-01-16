@@ -1,0 +1,78 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9fafb; /* off-white */
+}
+
+.pageDiv {
+  flex: 1;
+  display: flex;
+  align-items: center;       /* vertical center */
+  justify-content: center;   /* horizontal center */
+}
+
+.background {
+  background-color: grey;
+  border: 2px solid black;
+  padding: clamp(16px, 3vw, 32px);
+}
+
+.link {
+  display: block;       /* ⬅️ key */
+  width: 100%;
+  height: 100%;
+
+  text-decoration: none;
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+
+  width: 100%;
+  max-width: 900px;
+  padding: 24px;
+}
+
+.actionButton {
+  height: 100%;
+  width: 100%;
+
+  background-color: #1E40AF;/* cobalt blue */
+  color: white;
+  border: none;
+  border-radius: 12px;
+
+  padding: 24px;
+  min-height: 150px;
+
+  text-align: left;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+
+  font-size: 1.1rem;
+  font-weight: 600;
+
+  transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+.actionButton:hover {
+  background-color: #1C3A99;
+}
+
+.actionButton:active {
+  transform: translateY(1px);
+}
+
+.subtext {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #e0e7ff;
+  line-height: 1.4;
+}

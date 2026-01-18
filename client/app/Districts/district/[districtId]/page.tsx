@@ -1,4 +1,5 @@
 import styles from './page.module.css';
+import Header from '@/components/Header';
 
 type PageProps = {
     params: {
@@ -12,6 +13,8 @@ export default async function districtPage({ params }: PageProps) {
 
     return (
         <div className = {styles.pageDiv}>
+            <Header />
+
             <h1>District {districtId}</h1>
         </div>
     );

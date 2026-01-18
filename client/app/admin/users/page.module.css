@@ -6,7 +6,7 @@
 
 .mainPageDiv {
 display: grid;
-  grid-template-columns: 1fr 1.6fr; /* left 50% / right 50% */
+  grid-template-columns: 1fr 2fr; /* left 50% / right 50% */
   width: 100%;
 }
 
@@ -137,6 +137,15 @@ display: grid;
 
 .usersTable tbody tr:hover {
   background: #f9fafb;
+}
+
+.emailCell {
+  display: inline-block;
+  max-width: 200px;       /* adjust to taste */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
 }
 
 .thButton {

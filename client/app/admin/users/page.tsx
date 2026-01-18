@@ -33,11 +33,89 @@ export default function UsersAdminPage() {
     // Track deletions per-user so only that row shows "Deleting..."
     const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
 
-    const sortedUsers = [...users].sort((a, b) => {
-        const aVal = a.districtId ?? Number.POSITIVE_INFINITY; // nulls go last
-        const bVal = b.districtId ?? Number.POSITIVE_INFINITY;
-        return districtSortAsc ? aVal - bVal : bVal - aVal;
-    });
+    function hasRole(u: User, role: string) {
+        return (u.roles ?? []).includes(role);
+    }
+
+    function sortByEmail(a: User, b: User) {
+        return (a.email ?? "").localeCompare(b.email ?? "");
+    }
+
+    function sortStoreManagers(a: User, b: User) {
+        // Order store managers nicely under a district manager:
+        // by locationId first (nulls last), then email
+        const aLoc = a.locationId ?? Number.POSITIVE_INFINITY;
+        const bLoc = b.locationId ?? Number.POSITIVE_INFINITY;
+        if (aLoc !== bLoc) return aLoc - bLoc;
+        return sortByEmail(a, b);
+    }
+
+    const sortedUsers = (() => {
+        const admins = users.filter(u => hasRole(u, "Admin")).sort(sortByEmail);
+
+        const districtManagers = users
+            .filter(u => hasRole(u, "DistrictManager") && !hasRole(u, "Admin"))
+            .sort((a, b) => {
+                const aDist = a.districtId ?? Number.POSITIVE_INFINITY;
+                const bDist = b.districtId ?? Number.POSITIVE_INFINITY;
+                if (aDist !== bDist) return aDist - bDist;
+                return sortByEmail(a, b);
+            });
+
+        const storeManagers = users
+            .filter(u => hasRole(u, "StoreManager") && !hasRole(u, "Admin") && !hasRole(u, "DistrictManager"));
+
+        // Map districtId -> store managers in that district
+        const storesByDistrict = new Map<number, User[]>();
+        const unscopedStores: User[] = [];
+
+        for (const sm of storeManagers) {
+            if (sm.districtId == null) {
+                unscopedStores.push(sm);
+                continue;
+            }
+            const arr = storesByDistrict.get(sm.districtId) ?? [];
+            arr.push(sm);
+            storesByDistrict.set(sm.districtId, arr);
+        }
+
+        // Build final list: Admins, then each DM followed by their stores
+        const result: User[] = [...admins];
+
+        const usedStoreIds = new Set<string>();
+
+        for (const dm of districtManagers) {
+            result.push(dm);
+
+            const dist = dm.districtId;
+            if (dist != null) {
+                const stores = (storesByDistrict.get(dist) ?? []).sort(sortStoreManagers);
+                for (const sm of stores) {
+                    result.push(sm);
+                    usedStoreIds.add(sm.id);
+                }
+            }
+        }
+
+        // Any store managers with a districtId that didn't have a DM, plus unscoped stores
+        const leftoverStores = storeManagers
+            .filter(sm => !usedStoreIds.has(sm.id))
+            .sort((a, b) => {
+                const aDist = a.districtId ?? Number.POSITIVE_INFINITY;
+                const bDist = b.districtId ?? Number.POSITIVE_INFINITY;
+                if (aDist !== bDist) return aDist - bDist;
+                return sortStoreManagers(a, b);
+            });
+
+        // Put unscoped stores dead last
+        const unscopedSorted = unscopedStores.sort(sortStoreManagers);
+
+        result.push(...leftoverStores.filter(sm => sm.districtId != null));
+        result.push(...unscopedSorted);
+
+        return result;
+    })();
+
 
     async function loadUsers() {
         const token = localStorage.getItem("accessToken");
@@ -308,7 +386,12 @@ export default function UsersAdminPage() {
                             <tbody>
                                 {sortedUsers.map((u) => (
                                     <tr key={u.id}>
-                                        <td>{u.email}</td>
+                                        <td>
+                                            <span className={styles.emailCell} title={u.email}>
+                                                {u.email}
+                                            </span>
+                                        </td>
+
 
                                         <td>
                                             {u.roles?.length ? (

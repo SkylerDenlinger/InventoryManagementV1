@@ -6,7 +6,7 @@
 
 .mainPageDiv {
 display: grid;
-  grid-template-columns: 1fr 1fr; /* left 50% / right 50% */
+  grid-template-columns: 1fr 1.6fr; /* left 50% / right 50% */
   width: 100%;
 }
 
@@ -174,3 +174,28 @@ display: grid;
   color: #9ca3af;
   font-style: italic;
 }
+
+.deleteButton {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ef4444;
+  background: white;
+  color: #b91c1c;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.05s ease, background-color 0.15s ease;
+}
+
+.deleteButton:hover {
+  background: #fee2e2;
+}
+
+.deleteButton:active {
+  transform: translateY(1px);
+}
+
+.deleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+

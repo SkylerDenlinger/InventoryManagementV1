@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Inventory.Infrastructure.Identity;
 
 namespace Inventory.Api.Controllers;
 
@@ -58,7 +59,10 @@ public class AuthController : ControllerBase
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
+            new("districtId", user.DistrictId?.ToString() ?? ""),
+            new("locationId", user.LocationId?.ToString() ?? "")
         };
 
         // Put roles into the token so [Authorize(Roles="Admin")] works
@@ -89,6 +93,9 @@ public class AuthController : ControllerBase
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue(JwtRegisteredClaimNames.Email);
         var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray();
 
-        return Ok(new { email, roles });
+        var districtId = User.FindFirstValue("districtId");
+        var locationId = User.FindFirstValue("locationId");
+
+        return Ok(new { email, roles, districtId, locationId });
     }
 }

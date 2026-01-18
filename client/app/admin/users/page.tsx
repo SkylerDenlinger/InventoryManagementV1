@@ -9,6 +9,7 @@ type User = {
     email: string;
     roles: string[];
     districtId: number | null;
+    locationId: number | null;
 };
 
 type Role = "Admin" | "DistrictManager" | "StoreManager";
@@ -23,8 +24,14 @@ export default function UsersAdminPage() {
     const [error, setError] = useState<string | null>(null);
 
     const [users, setUsers] = useState<User[]>([]);
-
     const [districtSortAsc, setDistrictSortAsc] = useState(true);
+
+    const [districtId, setDistrictId] = useState<string>("");
+    const [locationId, setLocationId] = useState<string>("");
+
+
+    // Track deletions per-user so only that row shows "Deleting..."
+    const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
 
     const sortedUsers = [...users].sort((a, b) => {
         const aVal = a.districtId ?? Number.POSITIVE_INFINITY; // nulls go last
@@ -32,18 +39,21 @@ export default function UsersAdminPage() {
         return districtSortAsc ? aVal - bVal : bVal - aVal;
     });
 
-    useEffect(() => {
+    async function loadUsers() {
         const token = localStorage.getItem("accessToken");
         if (!token) return;
 
-        fetch("http://localhost:5230/api/admin/users", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then((res) => (res.ok ? res.json() : Promise.reject()))
-            .then(setUsers)
-            .catch(() => { });
+        const res = await fetch("http://localhost:5230/api/admin/users", {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to load users");
+        const data = await res.json();
+        setUsers(data);
+    }
+
+    useEffect(() => {
+        loadUsers().catch(() => { });
     }, []);
 
     async function handleCreateUser(e: React.FormEvent) {
@@ -59,13 +69,45 @@ export default function UsersAdminPage() {
                 return;
             }
 
+            const payload: any = { email, password, role };
+
+            if (role === "DistrictManager") {
+                const parsed = Number(districtId);
+                if (!Number.isFinite(parsed) || parsed <= 0) {
+                    setError("DistrictId must be a positive number.");
+                    setIsLoading(false);
+                    return;
+                }
+                payload.districtId = parsed;
+            }
+
+            if (role === "StoreManager") {
+                const parsed1 = Number(locationId);
+                if (!Number.isFinite(parsed1) || parsed1 <= 0) {
+                    setError("LocationId must be a positive number.");
+                    setIsLoading(false);
+                    return;
+                }
+                payload.locationId = parsed1;
+                const parsed2 = Number(districtId);
+                if (!Number.isFinite(parsed2) || parsed2 <= 0) {
+                    setError("DistrictId must be a positive number.");
+                    setIsLoading(false);
+                    return;
+                }
+                payload.districtId = parsed2;
+            }
+
+            // Admin: send nothing extra
+
+
             const res = await fetch("http://localhost:5230/api/admin/users", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ email, password, role }),
+                body: JSON.stringify(payload),
             });
 
             if (!res.ok) {
@@ -84,11 +126,62 @@ export default function UsersAdminPage() {
 
             setEmail("");
             setPassword("");
+            setDistrictId("");
+            setLocationId("");
             setRole("StoreManager");
+
+            // Refresh list (or you can optimistically append)
+            await loadUsers();
         } catch {
             setError("Could not reach API (is it running?)");
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    async function handleDeleteUser(userId: string, userEmail: string) {
+        setMessage(null);
+        setError(null);
+
+        const ok = window.confirm(`Delete user "${userEmail}"? This cannot be undone.`);
+        if (!ok) return;
+
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            setError("No access token found. Please log in as Admin first.");
+            return;
+        }
+
+        setDeletingIds((prev) => ({ ...prev, [userId]: true }));
+
+        try {
+            const res = await fetch(`http://localhost:5230/api/admin/users/${userId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) {
+                const body = await res.json().catch(() => null);
+                const msg =
+                    body?.message ??
+                    (res.status === 401 || res.status === 403
+                        ? "Not authorized (are you logged in as Admin?)"
+                        : "Failed to delete user");
+                setError(msg);
+                return;
+            }
+
+            // Optimistic remove from UI
+            setUsers((prev) => prev.filter((u) => u.id !== userId));
+            setMessage(`Deleted user: ${userEmail}`);
+        } catch {
+            setError("Could not reach API (is it running?)");
+        } finally {
+            setDeletingIds((prev) => {
+                const copy = { ...prev };
+                delete copy[userId];
+                return copy;
+            });
         }
     }
 
@@ -100,18 +193,13 @@ export default function UsersAdminPage() {
                 {/* LEFT PANEL */}
                 <div className={styles.leftPanel}>
                     <h1 className={styles.pageTitle}>Users Admin Page</h1>
-                    <p className={styles.pageSubtitle}>
-                        Manage users from this admin interface.
-                    </p>
+                    <p className={styles.pageSubtitle}>Manage users from this admin interface.</p>
 
                     <hr className={styles.divider} />
 
                     <h2 className={styles.sectionTitle}>Create User</h2>
 
-                    <form
-                        onSubmit={handleCreateUser}
-                        className={styles.createUserForm}
-                    >
+                    <form onSubmit={handleCreateUser} className={styles.createUserForm}>
                         <label className={styles.formLabel}>
                             <span className={styles.labelText}>Email</span>
                             <input
@@ -149,17 +237,42 @@ export default function UsersAdminPage() {
                             </select>
                         </label>
 
-                        <button
-                            className={styles.submitButton}
-                            disabled={isLoading}
-                            type="submit"
-                        >
+                        {/* DistrictId (DistrictManager OR StoreManager) */}
+                        {(role === "DistrictManager" || role === "StoreManager") && (
+                            <label className={styles.formLabel}>
+                                <span className={styles.labelText}>District Id</span>
+                                <input
+                                    className={styles.textInput}
+                                    value={districtId}
+                                    onChange={(e) => setDistrictId(e.target.value)}
+                                    inputMode="numeric"
+                                    placeholder="e.g. 1"
+                                    required
+                                />
+                            </label>
+                        )}
+
+                        {/* LocationId (StoreManager only) */}
+                        {role === "StoreManager" && (
+                            <label className={styles.formLabel}>
+                                <span className={styles.labelText}>Location Id</span>
+                                <input
+                                    className={styles.textInput}
+                                    value={locationId}
+                                    onChange={(e) => setLocationId(e.target.value)}
+                                    inputMode="numeric"
+                                    placeholder="e.g. 1"
+                                    required
+                                />
+                            </label>
+                        )}
+
+
+                        <button className={styles.submitButton} disabled={isLoading} type="submit">
                             {isLoading ? "Creating..." : "Create User"}
                         </button>
 
-                        {message && (
-                            <p className={styles.successMessage}>{message}</p>
-                        )}
+                        {message && <p className={styles.successMessage}>{message}</p>}
                         {error && <p className={styles.errorMessage}>{error}</p>}
                     </form>
                 </div>
@@ -187,6 +300,8 @@ export default function UsersAdminPage() {
                                             </span>
                                         </button>
                                     </th>
+                                    <th>Location</th>
+                                    <th>Delete</th>
                                 </tr>
                             </thead>
 
@@ -209,14 +324,38 @@ export default function UsersAdminPage() {
                                             )}
                                         </td>
 
-                                        <td>{u.districtId ?? <span className={styles.mutedCell}>—</span>}</td>
+                                        <td>
+                                            {u.districtId ?? (
+                                                <span className={styles.mutedCell}>—</span>
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            {u.locationId ?? (
+                                                <span className={styles.mutedCell}>—</span>
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className={styles.deleteButton}
+                                                onClick={() => handleDeleteUser(u.id, u.email)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
+
                         </table>
                     </div>
-                </div>
 
+                    {/* show messages on right too if you want */}
+                    {message && <p className={styles.successMessage}>{message}</p>}
+                    {error && <p className={styles.errorMessage}>{error}</p>}
+                </div>
             </div>
         </div>
     );

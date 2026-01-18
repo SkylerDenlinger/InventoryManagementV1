@@ -3,6 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Inventory.Infrastructure.Identity;
+using Inventory.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +78,9 @@ app.UseCors("frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Seed Identity
+await IdentitySeeder.SeedAsync(app.Services);
 
 app.Run();
 

@@ -9,8 +9,8 @@ type PageProps = {
     };
 };
 
-export default function LocationPage({ params }: PageProps) {
-    const { districtId, locationId } = params;
+export default async function LocationPage({ params }: PageProps) {
+    const { districtId, locationId } = await params;
 
     return (
         <div className={styles.pageWrapper}>

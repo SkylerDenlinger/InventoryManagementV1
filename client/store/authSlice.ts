@@ -23,13 +23,13 @@ const initialState: AuthState = {
 };
 
 // Thunk: calls /me using the token in state (or localStorage fallback)
-export const fetchMe = createAsyncThunk<User, void, { rejectValue: string }>(
+type RootState = { auth: AuthState };
+
+export const fetchMe = createAsyncThunk<User, void, { state: RootState; rejectValue: string }>(
   "auth/fetchMe",
   async (_, { getState, rejectWithValue }) => {
-    const state = getState() as { auth: AuthState };
-
-    const token =
-      state.auth.accessToken ?? localStorage.getItem("accessToken");
+    const state = getState();
+    const token = state.auth.accessToken ?? localStorage.getItem("accessToken");
 
     if (!token) return rejectWithValue("No token available");
 
@@ -86,6 +86,8 @@ const authSlice = createSlice({
         state.user = null;
         state.status = "guest";
         state.error = action.payload ?? "Unknown error";
+        state.accessToken = null;
+        localStorage.removeItem("accessToken");
       });
   },
 });

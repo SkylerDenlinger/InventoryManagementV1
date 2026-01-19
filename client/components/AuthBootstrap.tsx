@@ -2,13 +2,17 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/store/hooks";
-import { fetchMe } from "@/store/authSlice";
+import { setToken, fetchMe } from "@/store/authSlice";
 
-export default function AuthBootstrap() {
+export default function AuthBootstrapper() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(fetchMe());
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      dispatch(setToken(token));   // puts token into redux
+      dispatch(fetchMe());         // loads user + sets status authed/guest
+    }
   }, [dispatch]);
 
   return null;

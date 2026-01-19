@@ -1,12 +1,14 @@
 "use client";
 
 import { Provider } from "react-redux";
-import { store } from "./store";
+import { store } from "@/store/store";
+import AuthBootstrapper from "@/components/AuthBootstrap";
 
-export default function Providers({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <Provider store={store}>{children}</Provider>;
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Provider store={store}>
+      <AuthBootstrapper />
+      {children}
+    </Provider>
+  );
 }

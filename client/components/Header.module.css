@@ -25,3 +25,14 @@
   font-size: 0.875rem;
   color: White;
 }
+
+.logInContainer {
+  margin-left: auto;
+}
+
+.logInButton {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: white;
+}

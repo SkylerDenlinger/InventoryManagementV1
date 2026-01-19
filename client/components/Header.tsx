@@ -2,61 +2,20 @@
 
 import styles from "./Header.module.css";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useAppSelector } from "@/store/hooks";
 
-type HeaderProps = {
-  title?: string;
-  subtitle?: string;
-};
-
-type User = {
-  id: string;
-  email: string;
-  roles: string[];
-  districtId: number | null;
-  locationId: number | null;
-};
-
-export default function Header({
-  title = "Generic Store",
-  subtitle = "Inventory System",
-}: HeaderProps) {
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) return;
-
-      const res = await fetch("http://localhost:5230/api/auth/me", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        console.error("Failed to fetch /me");
-        return;
-      }
-
-      const user: User = await res.json();
-      console.log("Fetched user:", user);
-      localStorage.setItem("me", JSON.stringify(user));
-    };
-
-    fetchUser();
-  }, []);
-
-  const user = JSON.parse(localStorage.getItem("me") ?? "null");
-
+export default function Header({ title = "Generic Store", subtitle = "Inventory System" }) {
   const router = useRouter();
+  const user = useAppSelector((s) => s.auth.user);
 
   function handleMenuClick() {
-    if (user && user.roles.includes("Admin")) {
+    if (!user) return;
+
+    if (user.roles.includes("Admin")) {
       router.push("/districts");
-    } else if (user && user.roles.includes("DistrictManager")) {
+    } else if (user.roles.includes("DistrictManager")) {
       router.push("/districts/district/" + user.districtId);
-    } else if (user && user.roles.includes("StoreManager")) {
+    } else if (user.roles.includes("StoreManager")) {
       router.push("/districts/district/" + user.districtId + "/location/" + user.locationId);
     }
   }
@@ -64,11 +23,19 @@ export default function Header({
   return (
     <header className={styles.header}>
       <div className={styles.titleContainer}>
-        <button className={styles.menuButton} aria-label="Menu Button" onClick={() => handleMenuClick()}>
+        <button className={styles.menuButton} aria-label="Menu Button" onClick={handleMenuClick}>
           <div className={styles.title}>{title}</div>
           <div className={styles.subtitle}>{subtitle}</div>
         </button>
       </div>
+      <div className={styles.logInContainer}>
+        <button className={styles.logInButton} aria-label="Log In Button" onClick={() => router.push("/login")}>
+          Log In
+        </button>
+      </div>
+
     </header>
   );
 }
+
+

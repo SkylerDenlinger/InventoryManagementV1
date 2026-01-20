@@ -1,21 +1,13 @@
-import styles from './page.module.css';
-import Header from '@/components/Header';
+import LocationClient from "@/app/districts/district/[districtId]/location/[locationId]/locationClient";
 
 type PageProps = {
-    params: {
-        districtId: string;
-        locationId: string;
-    };
+  params: { districtId: string; locationId: string };
 };
 
-export default async function districtPage({ params }: PageProps) {
-    const { districtId } = await params;
+export default function Page({ params }: PageProps) {
+  const { districtId, locationId } = params; // extract primitives
 
-    return (
-        <div className = {styles.pageDiv}>
-            <Header />
-
-            <h1>District {districtId}</h1>
-        </div>
-    );
+  return (
+    <LocationClient districtId={districtId} locationId={locationId} />
+  );
 }

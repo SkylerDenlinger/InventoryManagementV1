@@ -1,70 +1,14 @@
+// app/districts/district/[districtId]/location/[locationId]/page.tsx
+import LocationClient from "@/app/districts/district/[districtId]/location/[locationId]/locationClient";
 import styles from "./page.module.css";
-import Link from "next/link";
-import Header from "@/components/Header";
 
-type PageProps = {
-    params: {
-        districtId: string;
-        locationId: string;
-    };
-};
+export default async function LocationPage({
+  params,
+}: {
+  params: Promise<{ districtId: string; locationId: string }>;
+}) {
+  const { districtId, locationId } = await params;
 
-export default async function LocationPage({ params }: PageProps) {
-    const { districtId, locationId } = await params;
-
-    return (
-        <div className={styles.pageWrapper}>
-            <Header />
-
-            <div>
-                <h1>District {districtId}</h1>
-                <h2>Location {locationId}</h2>
-            </div>
-
-            <main className={styles.pageDiv}>
-                <div className={styles.background}>
-                    <div className={styles.actionsGrid}>
-                        <Link href="/Districts/Locations/Inventory" className={styles.link}>
-                            <button className={styles.actionButton}>
-                                View Inventory
-                                <span className={styles.subtext}>Low stock alerts</span>
-                            </button>
-                        </Link>
-                        <Link href="/Districts/Locations/CreateOrder" className={styles.link}>
-                            <button className={styles.actionButton}>
-                                Create Order
-                                <span className={styles.subtext}>
-                                    Restock request · Recommended amount
-                                </span>
-                            </button>
-                        </Link>
-                        <Link href="/Districts/Locations/CycleCount" className={styles.link}>
-                            <button className={styles.actionButton}>
-                                Cycle Count
-                                <span className={styles.subtext}>
-                                    Verify physical inventory
-                                </span>
-                            </button>
-                        </Link>
-                        <Link href="/Districts/Locations/RequestItem" className={styles.link}>
-                            <button className={styles.actionButton}>
-                                Request New Item
-                                <span className={styles.subtext}>
-                                    Submit item request for approval
-                                </span>
-                            </button>
-                        </Link>
-                        <Link href="/Districts/Locations/OrderHistory" className={styles.link}>
-                            <button className={styles.actionButton}>
-                                Order History
-                                <span className={styles.subtext}>
-                                    View previous orders
-                                </span>
-                            </button>
-                        </Link>
-                    </div>
-                </div>
-            </main>
-        </div>
-    );
+  // pass only primitives (plain values) to the client component
+  return <LocationClient districtId={districtId} locationId={locationId} />;
 }

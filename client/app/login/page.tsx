@@ -44,7 +44,7 @@ export default function LoginPage() {
       const me = await dispatch(fetchMe()).unwrap();
 
       // 4) Route based on roles (ONLY happens after submit)
-      if (me.roles.includes("Admin")) router.replace("/admin");
+      if (me.roles.includes("Admin")) router.replace("/districts");
       else if (me.roles.includes("DistrictManager"))
         router.replace(`/districts/district/${me.districtId}`);
       else if (me.roles.includes("StoreManager"))

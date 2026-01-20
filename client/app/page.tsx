@@ -15,7 +15,7 @@ export default function HomePage() {
 
     // 2) If we already have a user, route by role.
     if (user) {
-      if (user.roles.includes("Admin")) router.replace("/admin/users");
+      if (user.roles.includes("Admin")) router.replace("/districts");
       else if (user.roles.includes("DistrictManager"))
         router.replace(`/districts/district/${user.districtId}`);
       else if (user.roles.includes("StoreManager"))
